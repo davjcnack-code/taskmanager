@@ -4,8 +4,13 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 
-/*"Entity tells Spring/JPA." create a database table for this class.*/
+import java.time.LocalDateTime;
+
+/*"Entity tells Spring/JPA." create a database table for this class.
+*/
 @Entity
 public class Task {
     /*Marks as the primary key. */
@@ -25,6 +30,10 @@ public class Task {
 
     private boolean completed;
 
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
     /*The empty constructor is required by JPA. The JPA needs it so it can
     * create Task object when reading from the database.*/
     public Task(){
@@ -35,6 +44,31 @@ public class Task {
         this.description = description;
         this.completed = completed;
     }
+
+    /*
+    @PrePersist runs right before a new task is saved for the first time.
+
+    We use it to automatically set createdAt and updatedAt.
+    */
+    @PrePersist
+    public void onCreate(){
+        LocalDateTime now = LocalDateTime.now();
+
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    /*
+    @PreUpdate runs right before an existing task is updated.
+
+    We use it to automatically update updatedAt.
+    */
+    @PreUpdate
+    public void onUpdate(){
+        this.updatedAt = LocalDateTime.now();
+    }
+
+
     /*The getters and setter lets Spring/JPA read and change the private fields.*/
     public Long getId(){
         return id;
@@ -51,6 +85,15 @@ public class Task {
     public boolean isCompleted(){
         return completed;
     }
+
+    public LocalDateTime getCreatedAt(){
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt(){
+        return updatedAt;
+    }
+
     public void setId(Long id){
         this.id = id;
     }
