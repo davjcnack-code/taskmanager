@@ -48,10 +48,20 @@ public class TaskService {
         return taskRepository.findById(id);
     }
 
-    /*Saves a task to the database.
+    /*
+   Creates a new task from a TaskRequest DTO.
 
-     */
-    public Task createTask(Task task){
+   The client sends TaskRequest data.
+   We create a Task entity from that data.
+   Then we save the Task entity to the database.
+   */
+    public Task createTask(TaskRequest taskRequest) {
+        Task task = new Task(
+                taskRequest.getTitle(),
+                taskRequest.getDescription(),
+                taskRequest.isCompleted()
+        );
+
         return taskRepository.save(task);
     }
 
@@ -62,13 +72,14 @@ public class TaskService {
     If it exists, we update the fields and save it.
     If it does not exist, we return Optional.empty().
      */
-    public Optional<Task> updateTask(Long id, Task updatedTask){
-        return taskRepository.findById(id).map(existingTask -> {
-            existingTask.setTitle(updatedTask.getDescription());
-            existingTask.setDescription(updatedTask.getDescription());
-            existingTask.setCompleted(updatedTask.isCompleted());
+    public Optional<Task> updateTask(Long id, TaskRequest taskRequest){
+        return taskRepository.findById(id)
+                .map(existingTask -> {
+                    existingTask.setTitle(taskRequest.getDescription());
+                    existingTask.setDescription(taskRequest.getDescription());
+                    existingTask.setCompleted(taskRequest.isCompleted());
 
-            return taskRepository.save(existingTask);
+                    return taskRepository.save(existingTask);
 
         });
 

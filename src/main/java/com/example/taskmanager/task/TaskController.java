@@ -76,8 +76,8 @@ public class TaskController {
     @RequestBody turns JSON into a Task object.
     */
     @PostMapping
-    public Task createTask(@Valid @RequestBody Task task) {
-        return taskService.createTask(task);
+    public Task createTask(@Valid @RequestBody TaskRequest taskRequest) {
+        return taskService.createTask(taskRequest);
     }
 
     /*
@@ -88,8 +88,8 @@ public class TaskController {
     Updates an existing task.
     */
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @Valid @RequestBody Task updatedTask) {
-        return taskService.updateTask(id, updatedTask)
+    public ResponseEntity<Task> updateTask(@PathVariable Long id, @Valid @RequestBody TaskRequest taskRequest) {
+        return taskService.updateTask(id, taskRequest)
                 .map(task -> ResponseEntity.ok(task))
                 .orElse(ResponseEntity.notFound().build());
     }

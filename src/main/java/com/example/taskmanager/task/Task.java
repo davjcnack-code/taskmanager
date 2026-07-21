@@ -4,8 +4,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 /*"Entity tells Spring/JPA." create a database table for this class.*/
 @Entity
@@ -20,11 +18,9 @@ public class Task {
 
     /*These fields become columns in the database table.*/
 
-    @NotBlank(message = "Title is required.")
-    @Size(max = 100, message = "Title mist be at most 100 characters.")
+
     private String title;
 
-    @Size(max = 500, message = "Description must be at most 500 characters.")
     private String description;
 
     private boolean completed;
@@ -54,6 +50,9 @@ public class Task {
 
     public boolean isCompleted(){
         return completed;
+    }
+    public void setId(Long id){
+        this.id = id;
     }
 
     public void setTitle(String title){
