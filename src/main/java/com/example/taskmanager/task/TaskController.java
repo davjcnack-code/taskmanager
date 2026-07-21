@@ -44,7 +44,7 @@ public class TaskController {
     Returns all tasks.
     */
     @GetMapping
-    public List<Task> getAllTasks() {
+    public List<TaskResponse> getAllTasks() {
         return taskService.getAllTasks();
     }
 
@@ -61,9 +61,9 @@ public class TaskController {
     If the task does not exist, return 404 Not Found.
     */
     @GetMapping("/{id}")
-    public ResponseEntity<Task> getTaskById(@PathVariable Long id) {
+    public ResponseEntity<TaskResponse> getTaskById(@PathVariable Long id) {
         return taskService.getTaskById(id)
-                .map(task -> ResponseEntity.ok(task))
+                .map(taskResponse -> ResponseEntity.ok(taskResponse))
                 .orElse(ResponseEntity.notFound().build());
     }
 
@@ -76,7 +76,7 @@ public class TaskController {
     @RequestBody turns JSON into a Task object.
     */
     @PostMapping
-    public Task createTask(@Valid @RequestBody TaskRequest taskRequest) {
+    public TaskResponse createTask(@Valid @RequestBody TaskRequest taskRequest) {
         return taskService.createTask(taskRequest);
     }
 
@@ -88,9 +88,9 @@ public class TaskController {
     Updates an existing task.
     */
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @Valid @RequestBody TaskRequest taskRequest) {
+    public ResponseEntity<TaskResponse> updateTask(@PathVariable Long id, @Valid @RequestBody TaskRequest taskRequest) {
         return taskService.updateTask(id, taskRequest)
-                .map(task -> ResponseEntity.ok(task))
+                .map(taskResponse -> ResponseEntity.ok(taskResponse))
                 .orElse(ResponseEntity.notFound().build());
     }
 

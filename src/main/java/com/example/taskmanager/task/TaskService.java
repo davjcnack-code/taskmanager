@@ -19,6 +19,7 @@ import java.util.Optional;
 public class TaskService {
 
     private final TaskRepository taskRepository;
+
     /*
     Spring gives TaskService a TaskRepository object automatically.
     This is dependency injection.
@@ -26,14 +27,18 @@ public class TaskService {
     Dependency injection means an object receives what it needs from
     an outside source instead of creating it by itself.
      */
-    public TaskService(TaskRepository taskRepository){
+    public TaskService(TaskRepository taskRepository) {
         this.taskRepository = taskRepository;
     }
+
     /*
     Gets all task from the database
      */
-    public List<Task> getAllTasks(){
-        return taskRepository.findAll();
+    public List<TaskResponse> getAllTasks() {
+        return taskRepository.findAll()
+                .stream()
+                .map(this::toResponse)
+                .toList();
     }
 
     /*
@@ -44,8 +49,9 @@ public class TaskService {
 
     This helps us handle missing task safely.
      */
-    public Optional<Task> getTaskById(Long id) {
-        return taskRepository.findById(id);
+    public Optional<TaskResponse> getTaskById(Long id) {
+        return taskRepository.findById(id)
+                .map(this::toResponse);
     }
 
     /*
@@ -55,14 +61,15 @@ public class TaskService {
    We create a Task entity from that data.
    Then we save the Task entity to the database.
    */
-    public Task createTask(TaskRequest taskRequest) {
+    public TaskResponse createTask(TaskRequest taskRequest) {
         Task task = new Task(
                 taskRequest.getTitle(),
                 taskRequest.getDescription(),
                 taskRequest.isCompleted()
         );
+        Task savedTask = taskRepository.save(task);
 
-        return taskRepository.save(task);
+        return toResponse(savedTask);
     }
 
     /*
@@ -72,26 +79,28 @@ public class TaskService {
     If it exists, we update the fields and save it.
     If it does not exist, we return Optional.empty().
      */
-    public Optional<Task> updateTask(Long id, TaskRequest taskRequest){
+    public Optional<TaskResponse> updateTask(Long id, TaskRequest taskRequest) {
         return taskRepository.findById(id)
                 .map(existingTask -> {
                     existingTask.setTitle(taskRequest.getDescription());
                     existingTask.setDescription(taskRequest.getDescription());
                     existingTask.setCompleted(taskRequest.isCompleted());
 
-                    return taskRepository.save(existingTask);
+                    Task savedTask = taskRepository.save(existingTask);
+                    return toResponse(savedTask);
 
-        });
+                });
 
     }
+
     /*
     Deletes a task by id.
 
     Returns true if task was deleted.
     Returns false if the task does not exist.
      */
-    public boolean deleteTask(Long id){
-        if(!taskRepository.existsById(id)){
+    public boolean deleteTask(Long id) {
+        if (!taskRepository.existsById(id)) {
             return false;
         }
 
@@ -100,6 +109,18 @@ public class TaskService {
 
     }
 
+    /* This helper method converts a Task entity into a TaskResponse DTO
+
+        We keep this conversion in one place so we do not repeat the same code
+     */
+    private TaskResponse toResponse(Task task){
+        return new TaskResponse(
+                task.getId(),
+                task.getTitle(),
+                task.getDescription(),
+                task.isCompleted()
+        );
+    }
 
 
 }
