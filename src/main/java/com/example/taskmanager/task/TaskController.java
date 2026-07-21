@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -132,7 +133,6 @@ public class TaskController {
     In this case, we use POST to create a new task.
 
     @RequestBody tells Spring to read the JSON from the request body.
-
     Spring automatically converts the JSON into a Task object.
 
     Example request body:
@@ -143,12 +143,25 @@ public class TaskController {
         "completed": false
     }
 
+    @Valid tells Spring now check the validation rules inside the Task class.
+    @NotBlank and @Size
+    Complete path:
+    Client sends JSON
+        ↓
+    @RequestBody converts JSON into a Task object
+        ↓
+    @Valid checks the Task object
+        ↓
+    If valid, save it
+        ↓
+    If invalid, return 400 Bad Request
+
     taskRepository.save(task) saves the new task in the database.
 
     The saved task is returned as JSON, including the generated id.
     */
     @PostMapping
-    public Task createTask(@RequestBody Task task) {
+    public Task createTask(@Valid @RequestBody Task task) {
         return taskRepository.save(task);
     }
 
@@ -177,7 +190,7 @@ public class TaskController {
         return 404 Not Found
     */
     @PutMapping("/{id}")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task updatedTask) {
+    public ResponseEntity<Task> updateTask(@PathVariable Long id,@Valid @RequestBody Task updatedTask) {
         return taskRepository.findById(id)
                 .map(existingTask -> {
                     existingTask.setTitle(updatedTask.getTitle());
