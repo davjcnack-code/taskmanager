@@ -1,5 +1,6 @@
 package com.example.taskmanager.user;
 
+import com.example.taskmanager.security.JwtService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -8,10 +9,12 @@ public class UserService {
 
     private final AppUserRepository appUserRepository;
     private final BCryptPasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
-    public UserService(AppUserRepository appUserRepository, BCryptPasswordEncoder passwordEncoder){
+    public UserService(AppUserRepository appUserRepository, BCryptPasswordEncoder passwordEncoder, JwtService jwtService){
         this.appUserRepository = appUserRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     public UserResponse register(RegisterRequest request) {
@@ -49,11 +52,13 @@ public class UserService {
             throw new IllegalArgumentException("Invalid email or password");
         }
 
+        String token = jwtService.generateToken(user);
+
         return new LoginResponse(
                 user.getId(),
                 user.getName(),
                 user.getEmail(),
-                "Login successful"
+                token
         );
 
     }
