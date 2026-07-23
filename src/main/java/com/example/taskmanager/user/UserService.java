@@ -34,6 +34,30 @@ public class UserService {
         return toResponse(savedUser);
     }
 
+    public LoginResponse login(LoginRequest request){
+        String normalizedEmail = request.getEmail().toLowerCase();
+
+        AppUser user = appUserRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid email or password."));
+
+        boolean passwordMatches = passwordEncoder.matches(
+                request.getPassword(),
+                user.getPasswordHash()
+        );
+
+        if(!passwordMatches){
+            throw new IllegalArgumentException("Invalid email or password");
+        }
+
+        return new LoginResponse(
+                user.getId(),
+                user.getName(),
+                user.getEmail(),
+                "Login successful"
+        );
+
+    }
+
         private UserResponse toResponse(AppUser user){
             return new UserResponse(
                     user.getId(),
