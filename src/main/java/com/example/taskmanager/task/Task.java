@@ -1,11 +1,16 @@
 package com.example.taskmanager.task;
 
+import com.example.taskmanager.user.AppUser;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
+
 
 import java.time.LocalDateTime;
 
@@ -20,6 +25,10 @@ public class Task {
      */
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private AppUser user;
 
     /*These fields become columns in the database table.*/
 
@@ -108,5 +117,13 @@ public class Task {
 
     public void setCompleted(boolean completed){
         this.completed = completed;
+    }
+
+    public AppUser getUser(){
+        return user;
+    }
+
+    public void setUser(AppUser user){
+        this.user = user;
     }
 }

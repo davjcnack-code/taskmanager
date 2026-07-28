@@ -2,6 +2,7 @@ package com.example.taskmanager.task;
 
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,8 +45,10 @@ public class TaskController {
     Returns all tasks.
     */
     @GetMapping
-    public List<TaskResponse> getAllTasks() {
-        return taskService.getAllTasks();
+    public List<TaskResponse> getAllTasks(Authentication authentication) {
+        String userEmail = authentication.getName();
+
+        return taskService.getAllTasks(userEmail);
     }
 
     /*
@@ -61,8 +64,10 @@ public class TaskController {
     If the task does not exist, return 404 Not Found.
     */
     @GetMapping("/{id}")
-    public ResponseEntity<TaskResponse> getTaskById(@PathVariable Long id) {
-        return taskService.getTaskById(id)
+    public ResponseEntity<TaskResponse> getTaskById(@PathVariable Long id, Authentication authentication) {
+        String userEmail = authentication.getName();
+
+        return taskService.getTaskById(id, userEmail)
                 .map(taskResponse -> ResponseEntity.ok(taskResponse))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -76,8 +81,10 @@ public class TaskController {
     @RequestBody turns JSON into a Task object.
     */
     @PostMapping
-    public TaskResponse createTask(@Valid @RequestBody TaskRequest taskRequest) {
-        return taskService.createTask(taskRequest);
+    public TaskResponse createTask(@Valid @RequestBody TaskRequest taskRequest, Authentication authentication) {
+        String userEmail = authentication.getName();
+
+        return taskService.createTask(taskRequest, userEmail);
     }
 
     /*
@@ -88,8 +95,13 @@ public class TaskController {
     Updates an existing task.
     */
     @PutMapping("/{id}")
-    public ResponseEntity<TaskResponse> updateTask(@PathVariable Long id, @Valid @RequestBody TaskRequest taskRequest) {
-        return taskService.updateTask(id, taskRequest)
+    public ResponseEntity<TaskResponse> updateTask(@PathVariable Long id,
+                                                   @Valid @RequestBody TaskRequest taskRequest,
+                                                   Authentication authentication
+    ) {
+        String userEmail = authentication.getName();
+
+        return taskService.updateTask(id, taskRequest, userEmail)
                 .map(taskResponse -> ResponseEntity.ok(taskResponse))
                 .orElse(ResponseEntity.notFound().build());
     }
@@ -102,8 +114,10 @@ public class TaskController {
     Deletes a task if it exists.
     */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTask(@PathVariable Long id) {
-        boolean deleted = taskService.deleteTask(id);
+    public ResponseEntity<Void> deleteTask(@PathVariable Long id, Authentication authentication) {
+        String userEmail = authentication.getName();
+
+        boolean deleted = taskService.deleteTask(id, userEmail);
 
         if (!deleted) {
             return ResponseEntity.notFound().build();
