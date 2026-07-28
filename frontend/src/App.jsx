@@ -35,6 +35,10 @@ function App() {
         return true;
     });
 
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter((task) => task.completed).length;
+    const activeTasks = tasks.filter((task) => !task.completed).length;
+
     useEffect(() => {
         if (token) {
             fetchTasks();
@@ -112,8 +116,13 @@ function App() {
                 },
             });
 
+            if (response.status === 401 || response.status === 403) {
+                handleAuthExpired();
+                return;
+            }
+
             if (!response.ok) {
-                setMessage("Could not load tasks. Please log in again.");
+                setMessage("Could not load tasks.");
                 return;
             }
 
@@ -141,6 +150,11 @@ function App() {
                     completed: false,
                 }),
             });
+
+            if (response.status === 401 || response.status === 403) {
+                handleAuthExpired();
+                return;
+            }
 
             const data = await response.json();
 
@@ -175,6 +189,11 @@ function App() {
                 }),
             });
 
+            if (response.status === 401 || response.status === 403) {
+                handleAuthExpired();
+                return;
+            }
+
             const updatedTask = await response.json();
 
             if (!response.ok) {
@@ -205,6 +224,11 @@ function App() {
                 },
             });
 
+            if (response.status === 401 || response.status === 403) {
+                handleAuthExpired();
+                return;
+            }
+
             if (!response.ok) {
                 setMessage("Could not delete task");
                 return;
@@ -222,6 +246,13 @@ function App() {
         setEditTitle(task.title);
         setEditDescription(task.description);
         setMessage("");
+    }
+
+    function handleAuthExpired() {
+        localStorage.removeItem("token");
+        setToken(null);
+        setTasks([]);
+        setMessage("Your session expired. Please log in again.");
     }
 
     function handleCancelEdit() {
@@ -247,6 +278,11 @@ function App() {
                     completed: task.completed,
                 }),
             });
+
+            if (response.status === 401 || response.status === 403) {
+                handleAuthExpired();
+                return;
+            }
 
             const updatedTask = await response.json();
 
@@ -288,6 +324,23 @@ function App() {
 
                     {message && <div className="message">{message}</div>}
 
+                    <div className="stats">
+                        <div className="stat-card">
+                            <strong>{totalTasks}</strong>
+                            <span>Total</span>
+                        </div>
+
+                        <div className="stat-card">
+                            <strong>{activeTasks}</strong>
+                            <span>Active</span>
+                        </div>
+
+                        <div className="stat-card">
+                            <strong>{completedTasks}</strong>
+                            <span>Completed</span>
+                        </div>
+                    </div>
+
                     <form className="task-form" onSubmit={handleCreateTask}>
                         <h2>Create Task</h2>
 
@@ -317,21 +370,21 @@ function App() {
                                 className={filter === "all" ? "active" : "secondary"}
                                 onClick={() => setFilter("all")}
                             >
-                                All
+                                All ({totalTasks})
                             </button>
 
                             <button
                                 className={filter === "active" ? "active" : "secondary"}
                                 onClick={() => setFilter("active")}
                             >
-                                Active
+                                Active ({activeTasks})
                             </button>
 
                             <button
                                 className={filter === "completed" ? "active" : "secondary"}
                                 onClick={() => setFilter("completed")}
                             >
-                                Completed
+                                Completed ({completedTasks})
                             </button>
                         </div>
 

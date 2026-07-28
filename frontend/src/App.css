@@ -203,3 +203,29 @@ button.danger:hover {
   font-size: 14px;
   padding: 10px 12px;
 }
+.stats {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  flex: 1;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 16px;
+  text-align: center;
+}
+
+.stat-card strong {
+  display: block;
+  font-size: 28px;
+  color: #2563eb;
+  margin-bottom: 6px;
+}
+
+.stat-card span {
+  color: #4b5563;
+  font-size: 14px;
+}
