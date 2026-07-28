@@ -17,6 +17,24 @@ function App() {
     const [taskTitle, setTaskTitle] = useState("");
     const [taskDescription, setTaskDescription] = useState("");
 
+    const [editingTaskId, setEditingTaskId] = useState(null);
+    const [editTitle, setEditTitle] = useState("");
+    const [editDescription, setEditDescription] = useState("");
+
+    const [filter, setFilter] = useState("all");
+
+    const filteredTasks = tasks.filter((task) => {
+        if (filter === "active") {
+            return !task.completed;
+        }
+
+        if (filter === "completed") {
+            return task.completed;
+        }
+
+        return true;
+    });
+
     useEffect(() => {
         if (token) {
             fetchTasks();
@@ -199,6 +217,59 @@ function App() {
         }
     }
 
+    function handleStartEdit(task) {
+        setEditingTaskId(task.id);
+        setEditTitle(task.title);
+        setEditDescription(task.description);
+        setMessage("");
+    }
+
+    function handleCancelEdit() {
+        setEditingTaskId(null);
+        setEditTitle("");
+        setEditDescription("");
+    }
+
+    async function handleSaveEdit(event, task) {
+        event.preventDefault();
+        setMessage("");
+
+        try {
+            const response = await fetch(`${API_URL}/tasks/${task.id}`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    title: editTitle,
+                    description: editDescription,
+                    completed: task.completed,
+                }),
+            });
+
+            const updatedTask = await response.json();
+
+            if (!response.ok) {
+                setMessage(updatedTask.title || updatedTask.description || updatedTask.error || "Could not update task");
+                return;
+            }
+
+            setTasks(
+                tasks.map((currentTask) =>
+                    currentTask.id === task.id ? updatedTask : currentTask
+                )
+            );
+
+            setEditingTaskId(null);
+            setEditTitle("");
+            setEditDescription("");
+            setMessage("Task saved.");
+        } catch (error) {
+            setMessage("Could not connect to backend.");
+        }
+    }
+
     function handleLogout() {
         localStorage.removeItem("token");
         setToken(null);
@@ -241,31 +312,87 @@ function App() {
 
                     <div className="task-list">
                         <h2>Your Tasks</h2>
+                        <div className="filter-buttons">
+                            <button
+                                className={filter === "all" ? "active" : "secondary"}
+                                onClick={() => setFilter("all")}
+                            >
+                                All
+                            </button>
+
+                            <button
+                                className={filter === "active" ? "active" : "secondary"}
+                                onClick={() => setFilter("active")}
+                            >
+                                Active
+                            </button>
+
+                            <button
+                                className={filter === "completed" ? "active" : "secondary"}
+                                onClick={() => setFilter("completed")}
+                            >
+                                Completed
+                            </button>
+                        </div>
 
                         {tasks.length === 0 ? (
                             <p>No tasks yet.</p>
+                        ) : filteredTasks.length === 0 ? (
+                            <p>No tasks match this filter.</p>
                         ) : (
-                            tasks.map((task) => (
+                            filteredTasks.map((task) => (
                                 <div className="task-item" key={task.id}>
-                                    <h3 className={task.completed ? "completed-title" : ""}>
-                                        {task.title}
-                                    </h3>
+                                    {editingTaskId === task.id ? (
+                                        <form className="edit-form" onSubmit={(event) => handleSaveEdit(event, task)}>
+                                            <label>Title</label>
+                                            <input
+                                                type="text"
+                                                value={editTitle}
+                                                onChange={(event) => setEditTitle(event.target.value)}
+                                            />
 
-                                    <p>{task.description}</p>
+                                            <label>Description</label>
+                                            <input
+                                                type="text"
+                                                value={editDescription}
+                                                onChange={(event) => setEditDescription(event.target.value)}
+                                            />
 
-                                    <span className={task.completed ? "completed-badge" : ""}>
-                                {task.completed ? "Completed" : "Not completed"}
-                                    </span>
+                                            <div className="task-actions">
+                                                <button type="submit">Save</button>
 
-                                    <div className="task-actions">
-                                        <button onClick={() => handleToggleCompleted(task)}>
-                                            {task.completed ? "Mark Not Completed" : "Mark Completed"}
-                                        </button>
+                                                <button type="button" className="secondary" onClick={handleCancelEdit}>
+                                                    Cancel
+                                                </button>
+                                            </div>
+                                        </form>
+                                    ) : (
+                                        <>
+                                            <h3 className={task.completed ? "completed-title" : ""}>
+                                                {task.title}
+                                            </h3>
 
-                                        <button className="danger" onClick={() => handleDeleteTask(task.id)}>
-                                            Delete
-                                        </button>
-                                    </div>
+                                            <p>{task.description}</p>
+
+                                            <span className={task.completed ? "completed-badge" : ""}>
+                                                 {task.completed ? "Completed" : "Not completed"}
+                                            </span>
+
+                                            <div className="task-actions">
+                                                <button onClick={() => handleToggleCompleted(task)}>
+                                                    {task.completed ? "Mark Not Completed" : "Mark Completed"}
+                                                </button>
+
+                                                <button className="secondary" onClick={() => handleStartEdit(task)}>
+                                                    Edit
+                                                </button>
+
+                                                <button className="danger" onClick={() => handleDeleteTask(task.id)}>
+                                                    Delete
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             ))
                         )}

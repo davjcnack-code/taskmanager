@@ -87,7 +87,7 @@ public class TaskService {
     public Optional<TaskResponse> updateTask(Long id, TaskRequest taskRequest, String userEmail) {
         return taskRepository.findByIdAndUserEmail(id, userEmail)
                 .map(existingTask -> {
-                    existingTask.setTitle(taskRequest.getDescription());
+                    existingTask.setTitle(taskRequest.getTitle());
                     existingTask.setDescription(taskRequest.getDescription());
                     existingTask.setCompleted(taskRequest.isCompleted());
 
