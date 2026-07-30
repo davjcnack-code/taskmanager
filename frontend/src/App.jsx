@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import TaskStats from "./components/TaskStats";
 import TaskForm from "./components/TaskForm";
 import TaskItem from "./components/TaskItem";
+import TaskList from "./components/TaskList";
 import "./App.css";
 
 const API_URL = "http://localhost:8080";
@@ -341,54 +342,25 @@ function App() {
                         handleCreateTask={handleCreateTask}
                     />
 
-                    <div className="task-list">
-                        <h2>Your Tasks</h2>
-                        <div className="filter-buttons">
-                            <button
-                                className={filter === "all" ? "active" : "secondary"}
-                                onClick={() => setFilter("all")}
-                            >
-                                All ({totalTasks})
-                            </button>
-
-                            <button
-                                className={filter === "active" ? "active" : "secondary"}
-                                onClick={() => setFilter("active")}
-                            >
-                                Active ({activeTasks})
-                            </button>
-
-                            <button
-                                className={filter === "completed" ? "active" : "secondary"}
-                                onClick={() => setFilter("completed")}
-                            >
-                                Completed ({completedTasks})
-                            </button>
-                        </div>
-
-                        {tasks.length === 0 ? (
-                            <p>No tasks yet.</p>
-                        ) : filteredTasks.length === 0 ? (
-                            <p>No tasks match this filter.</p>
-                        ) : (
-                            filteredTasks.map((task) => (
-                                <TaskItem
-                                    key={task.id}
-                                    task={task}
-                                    editingTaskId={editingTaskId}
-                                    editTitle={editTitle}
-                                    editDescription={editDescription}
-                                    setEditTitle={setEditTitle}
-                                    setEditDescription={setEditDescription}
-                                    handleSaveEdit={handleSaveEdit}
-                                    handleCancelEdit={handleCancelEdit}
-                                    handleToggleCompleted={handleToggleCompleted}
-                                    handleStartEdit={handleStartEdit}
-                                    handleDeleteTask={handleDeleteTask}
-                                />
-                            ))
-                        )}
-                    </div>
+                    <TaskList
+                        tasks={tasks}
+                        filteredTasks={filteredTasks}
+                        filter={filter}
+                        setFilter={setFilter}
+                        totalTasks={totalTasks}
+                        activeTasks={activeTasks}
+                        completedTasks={completedTasks}
+                        editingTaskId={editingTaskId}
+                        editTitle={editTitle}
+                        editDescription={editDescription}
+                        setEditTitle={setEditTitle}
+                        setEditDescription={setEditDescription}
+                        handleSaveEdit={handleSaveEdit}
+                        handleCancelEdit={handleCancelEdit}
+                        handleToggleCompleted={handleToggleCompleted}
+                        handleStartEdit={handleStartEdit}
+                        handleDeleteTask={handleDeleteTask}
+                    />
                 </div>
             </div>
         );
