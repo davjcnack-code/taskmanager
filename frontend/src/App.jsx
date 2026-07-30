@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
+import AuthForm from "./components/AuthForm";
 import TaskStats from "./components/TaskStats";
 import TaskForm from "./components/TaskForm";
-import TaskItem from "./components/TaskItem";
 import TaskList from "./components/TaskList";
 import "./App.css";
 
@@ -367,79 +367,19 @@ function App() {
     }
 
     return (
-        <div className="app">
-            <div className="card">
-                <h1>Task Manager</h1>
-
-                <div className="tabs">
-                    <button
-                        className={mode === "login" ? "active" : "secondary"}
-                        onClick={() => setMode("login")}
-                    >
-                        Login
-                    </button>
-
-                    <button
-                        className={mode === "register" ? "active" : "secondary"}
-                        onClick={() => setMode("register")}
-                    >
-                        Register
-                    </button>
-                </div>
-
-                {mode === "register" ? (
-                    <form onSubmit={handleRegister}>
-                        <label>Name</label>
-                        <input
-                            type="text"
-                            value={name}
-                            onChange={(event) => setName(event.target.value)}
-                            placeholder="Enter your name"
-                        />
-
-                        <label>Email</label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(event) => setEmail(event.target.value)}
-                            placeholder="Enter your email"
-                        />
-
-                        <label>Password</label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(event) => setPassword(event.target.value)}
-                            placeholder="Enter your password"
-                        />
-
-                        <button type="submit">Create Account</button>
-                    </form>
-                ) : (
-                    <form onSubmit={handleLogin}>
-                        <label>Email</label>
-                        <input
-                            type="email"
-                            value={email}
-                            onChange={(event) => setEmail(event.target.value)}
-                            placeholder="Enter your email"
-                        />
-
-                        <label>Password</label>
-                        <input
-                            type="password"
-                            value={password}
-                            onChange={(event) => setPassword(event.target.value)}
-                            placeholder="Enter your password"
-                        />
-
-                        <button type="submit">Login</button>
-                    </form>
-                )}
-
-                {message && <div className="message">{message}</div>}
-            </div>
-        </div>
+        <AuthForm
+            mode={mode}
+            setMode={setMode}
+            name={name}
+            setName={setName}
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            handleRegister={handleRegister}
+            handleLogin={handleLogin}
+            message={message}
+        />
     );
 }
 
