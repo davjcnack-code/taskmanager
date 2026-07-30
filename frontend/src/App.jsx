@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import TaskStats from "./components/TaskStats";
 import TaskForm from "./components/TaskForm";
+import TaskItem from "./components/TaskItem";
 import "./App.css";
 
 const API_URL = "http://localhost:8080";
@@ -371,59 +372,20 @@ function App() {
                             <p>No tasks match this filter.</p>
                         ) : (
                             filteredTasks.map((task) => (
-                                <div className="task-item" key={task.id}>
-                                    {editingTaskId === task.id ? (
-                                        <form className="edit-form" onSubmit={(event) => handleSaveEdit(event, task)}>
-                                            <label>Title</label>
-                                            <input
-                                                type="text"
-                                                value={editTitle}
-                                                onChange={(event) => setEditTitle(event.target.value)}
-                                            />
-
-                                            <label>Description</label>
-                                            <input
-                                                type="text"
-                                                value={editDescription}
-                                                onChange={(event) => setEditDescription(event.target.value)}
-                                            />
-
-                                            <div className="task-actions">
-                                                <button type="submit">Save</button>
-
-                                                <button type="button" className="secondary" onClick={handleCancelEdit}>
-                                                    Cancel
-                                                </button>
-                                            </div>
-                                        </form>
-                                    ) : (
-                                        <>
-                                            <h3 className={task.completed ? "completed-title" : ""}>
-                                                {task.title}
-                                            </h3>
-
-                                            <p>{task.description}</p>
-
-                                            <span className={task.completed ? "completed-badge" : ""}>
-                                                 {task.completed ? "Completed" : "Not completed"}
-                                            </span>
-
-                                            <div className="task-actions">
-                                                <button onClick={() => handleToggleCompleted(task)}>
-                                                    {task.completed ? "Mark Not Completed" : "Mark Completed"}
-                                                </button>
-
-                                                <button className="secondary" onClick={() => handleStartEdit(task)}>
-                                                    Edit
-                                                </button>
-
-                                                <button className="danger" onClick={() => handleDeleteTask(task.id)}>
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        </>
-                                    )}
-                                </div>
+                                <TaskItem
+                                    key={task.id}
+                                    task={task}
+                                    editingTaskId={editingTaskId}
+                                    editTitle={editTitle}
+                                    editDescription={editDescription}
+                                    setEditTitle={setEditTitle}
+                                    setEditDescription={setEditDescription}
+                                    handleSaveEdit={handleSaveEdit}
+                                    handleCancelEdit={handleCancelEdit}
+                                    handleToggleCompleted={handleToggleCompleted}
+                                    handleStartEdit={handleStartEdit}
+                                    handleDeleteTask={handleDeleteTask}
+                                />
                             ))
                         )}
                     </div>
