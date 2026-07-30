@@ -4,8 +4,14 @@ import TaskStats from "./components/TaskStats";
 import TaskForm from "./components/TaskForm";
 import TaskList from "./components/TaskList";
 import "./App.css";
-
-const API_URL = "http://localhost:8080";
+import {
+    registerUser,
+    loginUser,
+    getTasks,
+    createTask,
+    updateTask,
+    deleteTask,
+} from "./api";
 
 function App() {
     const [mode, setMode] = useState("login");
@@ -54,29 +60,16 @@ function App() {
         setMessage("");
 
         try {
-            const response = await fetch(`${API_URL}/users/register`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    name,
-                    email,
-                    password,
-                }),
+            await registerUser({
+                name,
+                email,
+                password,
             });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                setMessage(data.error || "Registration failed");
-                return;
-            }
 
             setMessage("Registration successful. You can log in now.");
             setMode("login");
         } catch (error) {
-            setMessage("Could not connect to backend.");
+            setMessage(getErrorMessage(error, "Registration failed"));
         }
     }
 
@@ -85,55 +78,25 @@ function App() {
         setMessage("");
 
         try {
-            const response = await fetch(`${API_URL}/users/login`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    email,
-                    password,
-                }),
+            const data = await loginUser({
+                email,
+                password,
             });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                setMessage(data.error || "Login failed");
-                return;
-            }
 
             localStorage.setItem("token", data.token);
             setToken(data.token);
             setMessage(`Welcome, ${data.name}`);
         } catch (error) {
-            setMessage("Could not connect to backend.");
+            setMessage(getErrorMessage(error, "Login failed"));
         }
     }
 
     async function fetchTasks() {
         try {
-            const response = await fetch(`${API_URL}/tasks`, {
-                method: "GET",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            if (response.status === 401 || response.status === 403) {
-                handleAuthExpired();
-                return;
-            }
-
-            if (!response.ok) {
-                setMessage("Could not load tasks.");
-                return;
-            }
-
-            const data = await response.json();
+            const data = await getTasks(token);
             setTasks(data);
         } catch (error) {
-            setMessage("Could not connect to backend.");
+            handleApiError(error, "Could not load tasks.");
         }
     }
 
@@ -142,37 +105,18 @@ function App() {
         setMessage("");
 
         try {
-            const response = await fetch(`${API_URL}/tasks`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    title: taskTitle,
-                    description: taskDescription,
-                    completed: false,
-                }),
+            const newTask = await createTask(token, {
+                title: taskTitle,
+                description: taskDescription,
+                completed: false,
             });
-
-            if (response.status === 401 || response.status === 403) {
-                handleAuthExpired();
-                return;
-            }
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                setMessage(data.title || data.description || data.error || "Could not create task");
-                return;
-            }
 
             setTaskTitle("");
             setTaskDescription("");
-            setTasks([...tasks, data]);
+            setTasks([...tasks, newTask]);
             setMessage("Task created.");
         } catch (error) {
-            setMessage("Could not connect to backend.");
+            handleApiError(error, "Could not create task");
         }
     }
 
@@ -180,30 +124,11 @@ function App() {
         setMessage("");
 
         try {
-            const response = await fetch(`${API_URL}/tasks/${task.id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    title: task.title,
-                    description: task.description,
-                    completed: !task.completed,
-                }),
+            const updatedTask = await updateTask(token, task.id, {
+                title: task.title,
+                description: task.description,
+                completed: !task.completed,
             });
-
-            if (response.status === 401 || response.status === 403) {
-                handleAuthExpired();
-                return;
-            }
-
-            const updatedTask = await response.json();
-
-            if (!response.ok) {
-                setMessage(updatedTask.error || "Could not update task");
-                return;
-            }
 
             setTasks(
                 tasks.map((currentTask) =>
@@ -213,7 +138,7 @@ function App() {
 
             setMessage("Task updated.");
         } catch (error) {
-            setMessage("Could not connect to backend.");
+            handleApiError(error, "Could not update task");
         }
     }
 
@@ -221,27 +146,12 @@ function App() {
         setMessage("");
 
         try {
-            const response = await fetch(`${API_URL}/tasks/${taskId}`, {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            });
-
-            if (response.status === 401 || response.status === 403) {
-                handleAuthExpired();
-                return;
-            }
-
-            if (!response.ok) {
-                setMessage("Could not delete task");
-                return;
-            }
+            await deleteTask(token, taskId);
 
             setTasks(tasks.filter((task) => task.id !== taskId));
             setMessage("Task deleted.");
         } catch (error) {
-            setMessage("Could not connect to backend.");
+            handleApiError(error, "Could not delete task");
         }
     }
 
@@ -265,35 +175,38 @@ function App() {
         setEditDescription("");
     }
 
+    function getErrorMessage(error, fallbackMessage) {
+        if (!error.status) {
+            return "Could not connect to backend.";
+        }
+
+        return (
+            error.data?.title ||
+            error.data?.description ||
+            error.data?.error ||
+            fallbackMessage
+        );
+    }
+
+    function handleApiError(error, fallbackMessage) {
+        if (error.status === 401 || error.status === 403) {
+            handleAuthExpired();
+            return;
+        }
+
+        setMessage(getErrorMessage(error, fallbackMessage));
+    }
+
     async function handleSaveEdit(event, task) {
         event.preventDefault();
         setMessage("");
 
         try {
-            const response = await fetch(`${API_URL}/tasks/${task.id}`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                    title: editTitle,
-                    description: editDescription,
-                    completed: task.completed,
-                }),
+            const updatedTask = await updateTask(token, task.id, {
+                title: editTitle,
+                description: editDescription,
+                completed: task.completed,
             });
-
-            if (response.status === 401 || response.status === 403) {
-                handleAuthExpired();
-                return;
-            }
-
-            const updatedTask = await response.json();
-
-            if (!response.ok) {
-                setMessage(updatedTask.title || updatedTask.description || updatedTask.error || "Could not update task");
-                return;
-            }
 
             setTasks(
                 tasks.map((currentTask) =>
@@ -306,7 +219,7 @@ function App() {
             setEditDescription("");
             setMessage("Task saved.");
         } catch (error) {
-            setMessage("Could not connect to backend.");
+            handleApiError(error, "Could not update task");
         }
     }
 
