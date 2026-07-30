@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import TaskStats from "./components/TaskStats"
+import TaskStats from "./components/TaskStats";
+import TaskForm from "./components/TaskForm";
 import "./App.css";
 
 const API_URL = "http://localhost:8080";
@@ -331,27 +332,13 @@ function App() {
                         completedTasks={completedTasks}
                     />
 
-                    <form className="task-form" onSubmit={handleCreateTask}>
-                        <h2>Create Task</h2>
-
-                        <label>Title</label>
-                        <input
-                            type="text"
-                            value={taskTitle}
-                            onChange={(event) => setTaskTitle(event.target.value)}
-                            placeholder="Enter task title"
-                        />
-
-                        <label>Description</label>
-                        <input
-                            type="text"
-                            value={taskDescription}
-                            onChange={(event) => setTaskDescription(event.target.value)}
-                            placeholder="Enter task description"
-                        />
-
-                        <button type="submit">Add Task</button>
-                    </form>
+                    <TaskForm
+                        taskTitle={taskTitle}
+                        taskDescription={taskDescription}
+                        setTaskTitle={setTaskTitle}
+                        setTaskDescription={setTaskDescription}
+                        handleCreateTask={handleCreateTask}
+                    />
 
                     <div className="task-list">
                         <h2>Your Tasks</h2>
