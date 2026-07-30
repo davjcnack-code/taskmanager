@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import TaskStats from "./components/TaskStats"
 import "./App.css";
 
 const API_URL = "http://localhost:8080";
@@ -324,22 +325,11 @@ function App() {
 
                     {message && <div className="message">{message}</div>}
 
-                    <div className="stats">
-                        <div className="stat-card">
-                            <strong>{totalTasks}</strong>
-                            <span>Total</span>
-                        </div>
-
-                        <div className="stat-card">
-                            <strong>{activeTasks}</strong>
-                            <span>Active</span>
-                        </div>
-
-                        <div className="stat-card">
-                            <strong>{completedTasks}</strong>
-                            <span>Completed</span>
-                        </div>
-                    </div>
+                    <TaskStats
+                        totalTasks={totalTasks}
+                        activeTasks={activeTasks}
+                        completedTasks={completedTasks}
+                    />
 
                     <form className="task-form" onSubmit={handleCreateTask}>
                         <h2>Create Task</h2>
